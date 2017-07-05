@@ -1,0 +1,5 @@
+#!/bin/bash
+
+echo "Compiling the overlay from .dts to .dtbo"
+
+dtc -O dtb -o TwoButton-GPIO-Test-00A0.dtbo -b 0 -@ TwoButton-GPIO-Test.dts
