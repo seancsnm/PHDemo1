@@ -9,3 +9,7 @@
 *.VC.*
 *.sln
 *.vcxproj*
+
+# subprojects
+*/.git*
+*/.travis*

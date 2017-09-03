@@ -1,3 +1,6 @@
+#ifndef _FILE_ACCESS_ADC_H_
+#define _FILE_ACCESS_ADC_H_
+
 /**
  * Reads the value of an analog sensor by means of reading the current value in
  * it's corresponding file in the Linux file system.
@@ -20,3 +23,5 @@
 
 int readNumberFromFile(std::string filename);
 int readAnalog(int number);
+
+#endif
