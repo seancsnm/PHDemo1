@@ -61,7 +61,7 @@ ADC_Val* initAdcInputs(int numInputs, const char *blockingMode)
 	int blockingModeFlag = (BLOCKING_MODE_BUSY.compare(blockingMode) == 0)
 		? BBBIO_ADC_WORK_MODE_BUSY_POLLING
 		: BBBIO_ADC_WORK_MODE_TIMER_INT;
-	BBBIO_ADCTSC_module_ctrl(blockingModeFlag, 1);
+	BBBIO_ADCTSC_module_ctrl(blockingModeFlag, clockDivider);
 
 	//Setup each device
 	for (int i = 0; i < numInputs; i++)
@@ -93,11 +93,13 @@ int main(int argc, const char *argv[])
 	int numSamples = 10000;
 	bool measureRange = false;
 	const char *blockingMode = NULL;
+	int clockDivider = 1;
 	struct argparse_option options[] = {
 		OPT_HELP(),
 		OPT_STRING('b', "blocking", &blockingMode, string("mode of blocking while waiting for analog reads, " + 
 			string("can be either \"") + BLOCKING_MODE_BUSY + "\" or \"" + BLOCKING_MODE_TIMED + "\"").c_str()),
 		OPT_INTEGER('c', "count", &numInputs, "numer of analog inputs to test"),
+		OPT_INTEGER('d', "divider", &clockDivider, "clock divider to the ADC, default is 1"),
 		OPT_BOOLEAN('r', "range", &measureRange, "record the range of measured values per each input"),
 		OPT_INTEGER('s', "samples", &numSamples, "number of samples to read per analog input"),
 		OPT_END()
@@ -125,9 +127,15 @@ int main(int argc, const char *argv[])
 		cerr << "Blocking mode can only be one of \"" + BLOCKING_MODE_BUSY + "\" or \"" + BLOCKING_MODE_TIMED + "\"!" << endl;
 		exit(1);
 	}
+	if (clockDivider < 1)
+	{
+		cerr << "Clock divider must be a positive integer." << endl;
+		exit(1);
+	}
 
 	// initialize the analog inputs and set up their buffers
-	ADC_Val* ADC_vals = initAdcInputs(numInputs, blockingMode);
+	cout << "clock divider" << clockDivider << endl;
+	ADC_Val* ADC_vals = initAdcInputs(numInputs, blockingMode, clockDivider);
 
 	//////////////////////////
 	// Read values!
@@ -177,6 +185,7 @@ int main(int argc, const char *argv[])
 	}
 	
 	//Close GPIO mapping
+	free(ADC_vals);
 	if (iolib_free()) exit(-1);
 	cout << "iolib closed successfully" << endl;
 	
