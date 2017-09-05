@@ -34,15 +34,21 @@ public:
 
 	ADC_Val()
 	{
-		buffer = new unsigned int[BUFFER_SIZE];
+		buffer = (unsigned int*) malloc(sizeof(unsigned int) * BUFFER_SIZE);
 		range = UIntRange();
+	}
+
+	~ADC_Val()
+	{
+		free(buffer);
+		buffer = NULL;
 	}
 };
 
-ADC_Val* initAdcInputs(int numInputs, const char *blockingMode)
+ADC_Val* initAdcInputs(int numInputs, const char *blockingMode, int clockDivider)
 {
 	int exitCode;
-	ADC_Val* ADC_vals = (ADC_Val*) malloc(sizeof(ADC_Val) * numInputs);
+	ADC_Val *ADC_vals = new ADC_Val[numInputs]();
 
 	//Initialize GPIO library
 	if ((exitCode = iolib_init())) {
@@ -67,7 +73,6 @@ ADC_Val* initAdcInputs(int numInputs, const char *blockingMode)
 	for (int i = 0; i < numInputs; i++)
 	{
 		int BBBIO_ADC_AIN = ADCTSC_getAIN(i);
-		ADC_vals[i] = ADC_Val();
 
 		//Setup control for ADC channels
 		BBBIO_ADCTSC_channel_ctrl(BBBIO_ADC_AIN, BBBIO_ADC_STEP_MODE_SW_CONTINUOUS, 0, 1, BBBIO_ADC_STEP_AVG_1, ADC_vals[i].buffer, BUFFER_SIZE);
@@ -77,6 +82,13 @@ ADC_Val* initAdcInputs(int numInputs, const char *blockingMode)
 	}
 
 	return ADC_vals;
+}
+
+ADC_Val* freeAdcInputs(ADC_Val *ADC_vals, int count)
+{
+	if (ADC_vals)
+		delete[] ADC_vals;
+	return NULL;
 }
 
 chrono::milliseconds getMills()
@@ -185,7 +197,7 @@ int main(int argc, const char *argv[])
 	}
 	
 	//Close GPIO mapping
-	free(ADC_vals);
+	ADC_vals = freeAdcInputs(ADC_vals, numInputs);
 	if (iolib_free()) exit(-1);
 	cout << "iolib closed successfully" << endl;
 	
