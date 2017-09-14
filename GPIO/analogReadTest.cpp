@@ -154,7 +154,7 @@ int main(int argc, const char *argv[])
 	//////////////////////////
 	
 	// read in numSamples samples for each input in numInputs
-	cout << "Starting read...";
+	cout << "Starting read..." << endl;
 	chrono::milliseconds startMills = getMills();
 	for (int i = 0; i < numSamples; i++)
 	{
