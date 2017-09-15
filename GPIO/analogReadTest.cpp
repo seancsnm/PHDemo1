@@ -106,12 +106,14 @@ int main(int argc, const char *argv[])
 	bool measureRange = false;
 	const char *blockingMode = NULL;
 	int clockDivider = 1;
+	int printInterval = 1000;
 	struct argparse_option options[] = {
 		OPT_HELP(),
 		OPT_STRING('b', "blocking", &blockingMode, string("mode of blocking while waiting for analog reads, " + 
 			string("can be either \"") + BLOCKING_MODE_BUSY + "\" or \"" + BLOCKING_MODE_TIMED + "\"").c_str()),
 		OPT_INTEGER('c', "count", &numInputs, "numer of analog inputs to test"),
 		OPT_INTEGER('d', "divider", &clockDivider, "clock divider to the ADC, default is 1"),
+		OPT_INTEGER('p', "printInterval", &printInterval, "interval of reads to print a message at, for progress updates"),
 		OPT_BOOLEAN('r', "range", &measureRange, "record the range of measured values per each input"),
 		OPT_INTEGER('s', "samples", &numSamples, "number of samples to read per analog input"),
 		OPT_END()
@@ -144,9 +146,13 @@ int main(int argc, const char *argv[])
 		cerr << "Clock divider must be a positive integer." << endl;
 		exit(1);
 	}
+	if (printInterval < 1)
+	{
+		cerr << "Print interval must be a positive integer." << endl;
+		exit(1);
+	}
 
 	// initialize the analog inputs and set up their buffers
-	cout << "clock divider" << clockDivider << endl;
 	ADC_Val* ADC_vals = initAdcInputs(numInputs, blockingMode, clockDivider);
 
 	//////////////////////////
@@ -168,7 +174,7 @@ int main(int argc, const char *argv[])
 			}
 		}
 
-		if (i % 1000 == 0 && i > 0)
+		if (i % printInterval == 0 && i > 0)
 		{
 			cout << "Read " << i << "/" << numSamples << " samples" << endl;
 		}
